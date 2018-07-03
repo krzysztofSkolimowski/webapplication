@@ -1,0 +1,46 @@
+body {
+    font-family: "Courier New", Courier, Courier, monospace !important;
+    color: #cccccc;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Courier New", Courier, Courier, monospace;
+    color: #cccccc;
+}
+
+.navbar {
+    margin: 0;
+}
+
+html {
+    background-image: url("../jpg/background.jpg");
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    margin: 0;
+}
+
+.page-header {
+    border-bottom: 0;
+    border-top: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+#flash-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.container {
+    margin-top: 0;
+    background-color: #3c3c3c;
+    width: 100%;
+}
+
+.alert-box-fixed {
+    margin: 0 15px 15px 0;
+}

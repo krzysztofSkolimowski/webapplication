@@ -1,0 +1,12 @@
+{{define "title"}}Sample application with use of go templates{{end}}
+{{define "head"}}{{end}}
+{{define "content"}}
+<div class="container">
+	<div class="page-header">
+		<h1>Hi, {{.first_name}} it is a pleasure to meet you.</h1>
+	</div>
+	<p>To enter notepad please click: {{LINK "notepad" "here"}}</p>
+	{{template "footer" .}}
+</div>
+{{end}}
+{{define "foot"}}{{end}}
