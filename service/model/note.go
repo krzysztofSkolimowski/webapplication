@@ -15,7 +15,7 @@ import (
 
 type Note struct {
 	ObjectID  bson.ObjectId `bson:"_id"`
-	ID        uint32        `db:"id" bson:"id,omitempty"` // Don't use Id, use NoteID() instead for consistency with MongoDB
+	ID        uint32        `db:"id" bson:"id,omitempty"`
 	Content   string        `db:"content" bson:"content"`
 	UserID    bson.ObjectId `bson:"user_id"`
 	UID       uint32        `db:"user_id" bson:"userid,omitempty"`
