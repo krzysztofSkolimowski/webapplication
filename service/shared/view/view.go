@@ -83,7 +83,7 @@ func (v *View) PrependBaseURI(s string) string {
 	return v.BaseURI + s
 }
 
-func New(req *http.Request) *View {
+func New(r *http.Request) *View {
 	v := &View{}
 	v.Vars = make(map[string]interface{})
 	v.Vars["AuthLevel"] = "anon"
@@ -92,9 +92,9 @@ func New(req *http.Request) *View {
 	v.Folder = viewInfo.Folder
 	v.Name = viewInfo.Name
 	v.Vars["BaseURI"] = v.BaseURI
-	v.request = req
-	sess := session.Instance(v.request)
-	if sess.Values["id"] != nil {
+	v.request = r
+	s := session.Instance(v.request)
+	if s.Values["id"] != nil {
 		v.Vars["AuthLevel"] = "auth"
 	}
 	return v
@@ -142,9 +142,9 @@ func (v *View) RenderSingle(w http.ResponseWriter) {
 	}
 
 	tc := templates
-	sess := session.Instance(v.request)
+	s := session.Instance(v.request)
 
-	if flashes := sess.Flashes(); len(flashes) > 0 {
+	if flashes := s.Flashes(); len(flashes) > 0 {
 		v.Vars["flashes"] = make([]Flash, len(flashes))
 		for i, f := range flashes {
 			switch f.(type) {
@@ -155,7 +155,7 @@ func (v *View) RenderSingle(w http.ResponseWriter) {
 			}
 
 		}
-		sess.Save(v.request, w)
+		s.Save(v.request, w)
 	}
 
 	err = tc.Funcs(pc).ExecuteTemplate(w, v.Name+"."+v.Extension, v.Vars)
@@ -204,9 +204,9 @@ func (v *View) Render(w http.ResponseWriter) {
 		tc = templates
 	}
 
-	sess := session.Instance(v.request)
+	s := session.Instance(v.request)
 
-	if flashes := sess.Flashes(); len(flashes) > 0 {
+	if flashes := s.Flashes(); len(flashes) > 0 {
 		v.Vars["flashes"] = make([]Flash, len(flashes))
 		for i, f := range flashes {
 			switch f.(type) {
@@ -217,7 +217,7 @@ func (v *View) Render(w http.ResponseWriter) {
 			}
 
 		}
-		sess.Save(v.request, w)
+		s.Save(v.request, w)
 	}
 
 	err := tc.Funcs(pc).ExecuteTemplate(w, rootTemplate+"."+v.Extension, v.Vars)
@@ -227,9 +227,9 @@ func (v *View) Render(w http.ResponseWriter) {
 	}
 }
 
-func Validate(req *http.Request, required []string) (bool, string) {
+func Validate(r *http.Request, required []string) (bool, string) {
 	for _, v := range required {
-		if req.FormValue(v) == "" {
+		if r.FormValue(v) == "" {
 			return false, v
 		}
 	}
@@ -238,10 +238,10 @@ func Validate(req *http.Request, required []string) (bool, string) {
 }
 
 func (v *View) SendFlashes(w http.ResponseWriter) {
-	sess := session.Instance(v.request)
+	s := session.Instance(v.request)
 
 	flashes := peekFlashes(w, v.request)
-	sess.Save(v.request, w)
+	s.Save(v.request, w)
 
 	js, err := json.Marshal(flashes)
 	if err != nil {
@@ -254,11 +254,11 @@ func (v *View) SendFlashes(w http.ResponseWriter) {
 }
 
 func peekFlashes(w http.ResponseWriter, r *http.Request) []Flash {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
 	var v []Flash
 
-	if flashes := sess.Flashes(); len(flashes) > 0 {
+	if flashes := s.Flashes(); len(flashes) > 0 {
 		v = make([]Flash, len(flashes))
 		for i, f := range flashes {
 			switch f.(type) {
@@ -274,14 +274,14 @@ func peekFlashes(w http.ResponseWriter, r *http.Request) []Flash {
 	return v
 }
 
-func Repopulate(list []string, src url.Values, dst map[string]interface{}) {
-	for _, v := range list {
+func Repopulate(l []string, src url.Values, dst map[string]interface{}) {
+	for _, v := range l {
 		dst[v] = src.Get(v)
 	}
 }
 
-func FileTime(name string) (string, error) {
-	fi, err := os.Stat(name)
+func FileTime(path string) (string, error) {
+	fi, err := os.Stat(path)
 	if err != nil {
 		return "", err
 	}

@@ -12,27 +12,27 @@ type Parser interface {
 	ParseJSON([]byte) error
 }
 
-func Load(configFile string, p Parser) {
+func Load(config string, p Parser) {
 	var err error
-	var absPath string
-	var input = io.ReadCloser(os.Stdin)
-	if absPath, err = filepath.Abs(configFile); err != nil {
+	var path string
+	var rc = io.ReadCloser(os.Stdin)
+	if path, err = filepath.Abs(config); err != nil {
 		log.Fatalln(err)
 	}
 
-	if input, err = os.Open(absPath); err != nil {
+	if rc, err = os.Open(path); err != nil {
 		log.Fatalln(err)
 	}
 
 	// Read the config file
-	jsonBytes, err := ioutil.ReadAll(input)
-	input.Close()
+	jsonBytes, err := ioutil.ReadAll(rc)
+	rc.Close()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// Parse the config
 	if err := p.ParseJSON(jsonBytes); err != nil {
-		log.Fatalln("Could not parse %q: %v", configFile, err)
+		log.Fatalln("Could not parse %q: %v", config, err)
 	}
 }

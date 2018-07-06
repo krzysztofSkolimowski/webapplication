@@ -7,7 +7,7 @@ import (
 	"github.com/krzysztofSkolimowski/webapplication/service/shared/view"
 )
 
-func IndexGET(w http.ResponseWriter, r *http.Request) {
+func Index(w http.ResponseWriter, r *http.Request) {
 	session := session.Instance(r)
 
 	if session.Values["id"] != nil {

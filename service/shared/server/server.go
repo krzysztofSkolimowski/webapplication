@@ -8,7 +8,7 @@ import (
 )
 
 type Server struct {
-	Hostname  string `json:"Hostname"`
+	Hostname  string `json:"Host"`
 	UseHTTP   bool   `json:"UseHTTP"`
 	UseHTTPS  bool   `json:"UseHTTPS"`
 	HTTPPort  int    `json:"HTTPPort"`

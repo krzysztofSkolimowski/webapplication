@@ -14,34 +14,34 @@ import (
 )
 
 func RegisterGET(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
 	v := view.New(r)
 	v.Name = "register/register"
-	v.Vars["token"] = csrfbanana.Token(w, r, sess)
+	v.Vars["token"] = csrfbanana.Token(w, r, s)
 	view.Repopulate([]string{"first_name", "last_name", "email"}, r.Form, v.Vars)
 	v.Render(w)
 }
 
 func RegisterPOST(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
-	if sess.Values["register_attempt"] != nil && sess.Values["register_attempt"].(int) >= 5 {
+	if s.Values["register_attempt"] != nil && s.Values["register_attempt"].(int) >= 5 {
 		log.Println("Brute force register prevented")
 		http.Redirect(w, r, "/register", http.StatusFound)
 		return
 	}
 
-	if validate, missingField := view.Validate(r, []string{"first_name", "last_name", "email", "password"}); !validate {
-		sess.AddFlash(view.Flash{"Field missing: " + missingField, view.FlashError})
-		sess.Save(r, w)
+	if ok, missing := view.Validate(r, []string{"first_name", "last_name", "email", "password"}); !ok {
+		s.AddFlash(view.Flash{"Field missing: " + missing, view.FlashError})
+		s.Save(r, w)
 		RegisterGET(w, r)
 		return
 	}
 
 	if !recaptcha.Verified(r) {
-		sess.AddFlash(view.Flash{"reCAPTCHA invalid!", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"reCAPTCHA invalid!", view.FlashError})
+		s.Save(r, w)
 		RegisterGET(w, r)
 		return
 	}
@@ -49,37 +49,37 @@ func RegisterPOST(w http.ResponseWriter, r *http.Request) {
 	firstName := r.FormValue("first_name")
 	lastName := r.FormValue("last_name")
 	email := r.FormValue("email")
-	password, errp := passhash.HashString(r.FormValue("password"))
+	password, err := passhash.HashString(r.FormValue("password"))
 
-	if errp != nil {
-		log.Println(errp)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+	if err != nil {
+		log.Println(err)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 		http.Redirect(w, r, "/register", http.StatusFound)
 		return
 	}
 
-	_, err := model.UserByEmail(email)
+	_, err = model.UserByEmail(email)
 
-	if err == model.ErrNoResult { // If success (no user exists with that email)
+	if err == model.ErrNoResult {
 		ex := model.UserCreate(firstName, lastName, email, password)
 		if ex != nil {
 			log.Println(ex)
-			sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-			sess.Save(r, w)
+			s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+			s.Save(r, w)
 		} else {
-			sess.AddFlash(view.Flash{"Account created successfully for: " + email, view.FlashSuccess})
-			sess.Save(r, w)
+			s.AddFlash(view.Flash{"Account created successfully for: " + email, view.FlashSuccess})
+			s.Save(r, w)
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 	} else if err != nil {
 		log.Println(err)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 	} else {
-		sess.AddFlash(view.Flash{"Account already exists for: " + email, view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"Account already exists for: " + email, view.FlashError})
+		s.Save(r, w)
 	}
 
 	RegisterGET(w, r)

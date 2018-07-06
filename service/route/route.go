@@ -27,8 +27,8 @@ func LoadHTTP() http.Handler {
 	//return http.HandlerFunc(redirectToHTTPS)
 }
 
-func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
-	http.Redirect(w, req, "https://"+req.Host, http.StatusMovedPermanently)
+func redirectToHTTPS(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://"+r.Host, http.StatusMovedPermanently)
 }
 
 func routes() *httprouter.Router {
@@ -45,7 +45,7 @@ func routes() *httprouter.Router {
 	// Home page
 	r.GET("/", wrapper.Handler(alice.
 		New().
-		ThenFunc(controller.IndexGET)))
+		ThenFunc(controller.Index)))
 
 	// Login
 	r.GET("/login", wrapper.Handler(alice.
@@ -69,7 +69,7 @@ func routes() *httprouter.Router {
 	// About
 	r.GET("/about", wrapper.Handler(alice.
 		New().
-		ThenFunc(controller.AboutGET)))
+		ThenFunc(controller.About)))
 
 	// Notepad
 	r.GET("/notepad", wrapper.Handler(alice.

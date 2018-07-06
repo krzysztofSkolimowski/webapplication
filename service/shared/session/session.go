@@ -27,8 +27,8 @@ func Instance(r *http.Request) *sessions.Session {
 	return session
 }
 
-func Empty(sess *sessions.Session) {
-	for k := range sess.Values {
-		delete(sess.Values, k)
+func Empty(s *sessions.Session) {
+	for k := range s.Values {
+		delete(s.Values, k)
 	}
 }

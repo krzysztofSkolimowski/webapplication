@@ -14,7 +14,7 @@ func TestStringString(t *testing.T) {
 	}
 
 	if !MatchString(hash, plainText) {
-		t.Error("Password does not match")
+		t.Error("Pass does not match")
 	}
 }
 
@@ -28,7 +28,7 @@ func TestByteByte(t *testing.T) {
 	}
 
 	if !MatchBytes(hash, plainText) {
-		t.Error("Password does not match")
+		t.Error("Pass does not match")
 	}
 }
 
@@ -42,7 +42,7 @@ func TestStringByte(t *testing.T) {
 	}
 
 	if !MatchBytes([]byte(hash), []byte(plainText)) {
-		t.Error("Password does not match")
+		t.Error("Pass does not match")
 	}
 }
 
@@ -56,6 +56,6 @@ func TestByteString(t *testing.T) {
 	}
 
 	if !MatchString(string(hash), string(plainText)) {
-		t.Error("Password does not match")
+		t.Error("Pass does not match")
 	}
 }

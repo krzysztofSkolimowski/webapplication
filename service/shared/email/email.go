@@ -12,8 +12,8 @@ var (
 
 type SMTPInfo struct {
 	Username string
-	Password string
-	Hostname string
+	Pass     string
+	Host     string
 	Port     int
 	From     string
 }
@@ -27,7 +27,7 @@ func ReadConfig() SMTPInfo {
 }
 
 func SendEmail(to, subject, body string) error {
-	auth := smtp.PlainAuth("", e.Username, e.Password, e.Hostname)
+	auth := smtp.PlainAuth("", e.Username, e.Pass, e.Host)
 
 	header := make(map[string]string)
 	header["From"] = e.From
@@ -44,7 +44,7 @@ func SendEmail(to, subject, body string) error {
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
 	err := smtp.SendMail(
-		fmt.Sprintf("%s:%d", e.Hostname, e.Port),
+		fmt.Sprintf("%s:%d", e.Host, e.Port),
 		auth,
 		e.From,
 		[]string{to},

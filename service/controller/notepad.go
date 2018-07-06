@@ -14,9 +14,9 @@ import (
 )
 
 func NotepadReadGET(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
-	userID := fmt.Sprintf("%s", sess.Values["id"])
+	userID := fmt.Sprintf("%s", s.Values["id"])
 
 	notes, err := model.NotesByUserID(userID)
 	if err != nil {
@@ -26,42 +26,42 @@ func NotepadReadGET(w http.ResponseWriter, r *http.Request) {
 
 	v := view.New(r)
 	v.Name = "notepad/read"
-	v.Vars["first_name"] = sess.Values["first_name"]
+	v.Vars["first_name"] = s.Values["first_name"]
 	v.Vars["notes"] = notes
 	v.Render(w)
 }
 
 func NotepadCreateGET(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
 	v := view.New(r)
 	v.Name = "notepad/create"
-	v.Vars["token"] = csrfbanana.Token(w, r, sess)
+	v.Vars["token"] = csrfbanana.Token(w, r, s)
 	v.Render(w)
 }
 
 func NotepadCreatePOST(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
 	if validate, missingField := view.Validate(r, []string{"note"}); !validate {
-		sess.AddFlash(view.Flash{"Field missing: " + missingField, view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"Field missing: " + missingField, view.FlashError})
+		s.Save(r, w)
 		NotepadCreateGET(w, r)
 		return
 	}
 
-	content := r.FormValue("note")
+	n := r.FormValue("note")
 
-	userID := fmt.Sprintf("%s", sess.Values["id"])
+	userID := fmt.Sprintf("%s", s.Values["id"])
 
-	err := model.NoteCreate(content, userID)
+	err := model.NoteCreate(n, userID)
 	if err != nil {
 		log.Println(err)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 	} else {
-		sess.AddFlash(view.Flash{"Note added!", view.FlashSuccess})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"Note added!", view.FlashSuccess})
+		s.Save(r, w)
 		http.Redirect(w, r, "/notepad", http.StatusFound)
 		return
 	}
@@ -70,56 +70,56 @@ func NotepadCreatePOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func NotepadUpdateGET(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
 	var params httprouter.Params
 	params = context.Get(r, "params").(httprouter.Params)
 	noteID := params.ByName("id")
 
-	userID := fmt.Sprintf("%s", sess.Values["id"])
+	userID := fmt.Sprintf("%s", s.Values["id"])
 
-	note, err := model.NoteByID(userID, noteID)
-	if err != nil { // If the note doesn't exist
+	n, err := model.NoteByID(userID, noteID)
+	if err != nil { // If the n doesn't exist
 		log.Println(err)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 		http.Redirect(w, r, "/notepad", http.StatusFound)
 		return
 	}
 
 	v := view.New(r)
 	v.Name = "notepad/update"
-	v.Vars["token"] = csrfbanana.Token(w, r, sess)
-	v.Vars["note"] = note.Content
+	v.Vars["token"] = csrfbanana.Token(w, r, s)
+	v.Vars["n"] = n.Content
 	v.Render(w)
 }
 
 func NotepadUpdatePOST(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
-	if validate, missingField := view.Validate(r, []string{"note"}); !validate {
-		sess.AddFlash(view.Flash{"Field missing: " + missingField, view.FlashError})
-		sess.Save(r, w)
+	if ok, missing := view.Validate(r, []string{"note"}); !ok {
+		s.AddFlash(view.Flash{"Field missing: " + missing, view.FlashError})
+		s.Save(r, w)
 		NotepadUpdateGET(w, r)
 		return
 	}
 
 	content := r.FormValue("note")
 
-	userID := fmt.Sprintf("%s", sess.Values["id"])
+	usrID := fmt.Sprintf("%s", s.Values["id"])
 
 	var params httprouter.Params
 	params = context.Get(r, "params").(httprouter.Params)
 	noteID := params.ByName("id")
 
-	err := model.NoteUpdate(content, userID, noteID)
+	err := model.NoteUpdate(content, usrID, noteID)
 	if err != nil {
 		log.Println(err)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 	} else {
-		sess.AddFlash(view.Flash{"Note updated!", view.FlashSuccess})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"Note updated!", view.FlashSuccess})
+		s.Save(r, w)
 		http.Redirect(w, r, "/notepad", http.StatusFound)
 		return
 	}
@@ -128,22 +128,22 @@ func NotepadUpdatePOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func NotepadDeleteGET(w http.ResponseWriter, r *http.Request) {
-	sess := session.Instance(r)
+	s := session.Instance(r)
 
-	userID := fmt.Sprintf("%s", sess.Values["id"])
+	usrID := fmt.Sprintf("%s", s.Values["id"])
 
 	var params httprouter.Params
 	params = context.Get(r, "params").(httprouter.Params)
 	noteID := params.ByName("id")
 
-	err := model.NoteDelete(userID, noteID)
+	err := model.NoteDelete(usrID, noteID)
 	if err != nil {
 		log.Println(err)
-		sess.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"An error occurred on the server. Please try again later.", view.FlashError})
+		s.Save(r, w)
 	} else {
-		sess.AddFlash(view.Flash{"Note deleted!", view.FlashSuccess})
-		sess.Save(r, w)
+		s.AddFlash(view.Flash{"Note deleted!", view.FlashSuccess})
+		s.Save(r, w)
 	}
 
 	http.Redirect(w, r, "/notepad", http.StatusFound)
